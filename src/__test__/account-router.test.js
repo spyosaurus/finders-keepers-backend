@@ -27,7 +27,6 @@ describe('ACCOUNT-ROUTER', () => {
       return superagent.post(`${apiURL}/signup`)
         .send({
           username: 'jennifer2',
-          password: 'darwin2',
         })
         .then(Promise.reject)
         .catch((error) => {
@@ -38,7 +37,7 @@ describe('ACCOUNT-ROUTER', () => {
       return createAccountMock()
         .then((savedUser) => {
           const mockUser = {
-            username: 'jennifer3',
+            username: savedUser.account.username,
             password: 'foo',
           };
           return superagent.post(`${apiURL}/signup`)
@@ -73,7 +72,7 @@ describe('ACCOUNT-ROUTER', () => {
           putAcctMock = acctSetMock;
           return superagent.put(`${apiURL}/accounts/${putAcctMock.account._id}`)
             .auth(putAcctMock.request.username, putAcctMock.request.password)
-            .send({ username: 'Collin'  });
+            .send({ username: 'Collin' });
         })
         .then((response) => {
           expect(response.status).toEqual(200);
