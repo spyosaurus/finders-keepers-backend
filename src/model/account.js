@@ -15,11 +15,6 @@ const accountSchema = mongoose.Schema({
     required: true,
     unique: true,
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   passwordHash: {
     type: String,
     required: true,
@@ -28,10 +23,6 @@ const accountSchema = mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false,
   },
   createdOn: {
     type: Date,

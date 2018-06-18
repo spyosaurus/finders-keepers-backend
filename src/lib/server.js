@@ -6,22 +6,15 @@ import mongoose from 'mongoose';
 import logger from './logger';
 import errorMiddleware from './error-middleware';
 import accountRouter from '../route/account-router';
-import profileRouter from '../route/profile-router';
-import plantRouter from '../route/plant-router';
-import plantResourceRouter from '../route/plant-resource-router';
 
 const app = express();
 let server = null;
 
-// routes will be app.use'd here
 app.use(cors({
   origin: 'http://localhost:8080',
   credentials: true,
 }));
 app.use(accountRouter);
-app.use(profileRouter);
-app.use(plantRouter);
-app.use(plantResourceRouter);
 
 app.all('*', (request, response) => {
   logger.log(logger.INFO, 'Returning a 404 from the catch-all/default route');
