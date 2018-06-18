@@ -46,7 +46,7 @@ function createToken() {
     .then((account) => {
       return jsonWebToken.sign(
         { tokenSeed: account.tokenSeed },
-        process.env.BLOOMIO_SECRET,
+        process.env.FINDERS_SECRET,
       );
     })
     .catch(() => {
@@ -59,14 +59,13 @@ accountSchema.methods.createToken = createToken;
 
 const Account = mongoose.model('account', accountSchema);
 
-Account.create = (username, email, password) => {
+Account.create = (username, password) => {
   return bcrypt.hash(password, HASH_ROUNDS)
     .then((passwordHash) => {
     password = null; // eslint-disable-line
       const tokenSeed = crypto.randomBytes(TOKEN_SEED_LENGTH).toString('hex');
       return new Account({
         username,
-        email,
         passwordHash,
         tokenSeed,
       }).save();

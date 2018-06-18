@@ -12,11 +12,11 @@ const jsonParser = bodyParser.json();
 const accountRouter = new Router();
 
 accountRouter.post('/signup', jsonParser, (request, response, next) => {
-  if (!request.body.username || !request.body.email || !request.body.password) {
+  if (!request.body.username || !request.body.password) {
     logger.log(logger.INFO, 'Invalid request');
     throw new HttpError(400, 'Invalid request.');
   }
-  return Account.create(request.body.username, request.body.email, request.body.password)
+  return Account.create(request.body.username, request.body.password)
     .then((account) => {
       delete request.body.password;
       logger.log('logger.INFO', 'AUTH - creating TOKEN.');
@@ -24,7 +24,7 @@ accountRouter.post('/signup', jsonParser, (request, response, next) => {
     })
     .then((token) => {
       logger.log('logger.INFO', 'AUTH - returning a 200 code and a token.');
-      response.cookie('Bloomio-Token', token);
+      response.cookie('Finders-Token', token);
       return response.send(token);
     })
     .catch(next);
@@ -37,7 +37,7 @@ accountRouter.get('/login', basicAuthMiddleware, (request, response, next) => {
   return request.account.createToken()
     .then((token) => {
       logger.log(logger.INFO, 'LOGIN - responding with a 200 status and a token.');
-      response.cookie('Bloomio-Token', token);
+      response.cookie('Finders-Token', token);
       return response.send(token);
     })
     .catch(next);
