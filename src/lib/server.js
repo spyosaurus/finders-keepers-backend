@@ -6,6 +6,9 @@ import mongoose from 'mongoose';
 import logger from './logger';
 import errorMiddleware from './error-middleware';
 import accountRouter from '../route/account-router';
+import ioCommands from './io-commands';
+
+require('dotenv').config();
 
 const app = express();
 let server = null;
@@ -28,6 +31,8 @@ const startServer = () => {
     .then(() => {
       server = app.listen(process.env.PORT, () => {
         logger.log(logger.INFO, `Server is listening on port ${process.env.PORT}`);
+        const ioServer = require('socket.io')(server);
+        ioCommands(ioServer);
       });
     });
 };
