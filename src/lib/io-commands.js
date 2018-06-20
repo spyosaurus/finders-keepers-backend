@@ -1,4 +1,5 @@
 import uuid from 'uuid';
+import randomString from 'randomstring';
 
 export default (ioServer) => {
   ioServer.on('connection', (socket) => {
@@ -14,7 +15,7 @@ export default (ioServer) => {
       });
     });
 
-// creating rooms
+    // creating rooms
 
 
     socket.on('CREATE_ROOM', () => {
@@ -31,19 +32,19 @@ export default (ioServer) => {
       }
 
       console.log('ROOM CREATED', roomCode);
-      ioServer.rooms[roomCode] = new Room (socket, roomCode);
-      let room = ioServer.rooms[roomCode];
+      ioServer.rooms[roomCode] = new Room(socket, roomCode);
+      const room = ioServer.rooms[roomCode];
 
-    socket.roomHost = roomCode;
+      socket.roomHost = roomCode;
 
-    let data = {'roomCode': roomCode, 'roomHost': socket.id };
-    socket.emit('SEND_ROOM', JSON.stringify(data));
+      const data = { roomCode, roomHost: socket.id };
+      socket.emit('SEND_ROOM', JSON.stringify(data));
     });
 
-// joining rooms
+    // joining rooms
 
     socket.on('JOIN_ROOM', (roomCode, nickname) => {
-      let room = ioServer.rooms[roomCode];
+      const room = ioServer.rooms[roomCode];
       if (room) {
         if (room.closed) {
           socket.emit('JOIN_ROOM_ERROR', 'room closed');
@@ -51,18 +52,18 @@ export default (ioServer) => {
         }  
         console.log(`${nickname} joined ${roomCode}`);
 
-      socket.join(roomCode)
+        socket.join(roomCode);
 
-      room.players.push(socket);
-      let numPlayers = room.players.length;
+        room.players.push(socket);
+        const numPlayers = room.players.length;
 
-      if (numPlayers >= 4) room.closed = true;
+        if (numPlayers >= 4) room.closed = true;
 
-      socket.emit('JOINED_ROOM');
-      ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, playerNames)
-    }
-    else { socket.emit('JOIN_ROOM_ERROR', 'room does not exist');
-    }
+        socket.emit('JOINED_ROOM');
+        ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, playerNames);
+      } else {
+        socket.emit('JOIN_ROOM_ERROR', 'room does not exist');
+      }
     });
   });
-}
+};
