@@ -1,5 +1,6 @@
 import uuid from 'uuid';
 import randomString from 'randomstring';
+import Room from './room';
 
 export default (ioServer) => {
   ioServer.on('connection', (socket) => {
@@ -35,7 +36,15 @@ export default (ioServer) => {
       ioServer.rooms[roomCode] = new Room(socket, roomCode);
       const room = ioServer.rooms[roomCode];
 
-      socket.roomHost = roomCode;
+      socket.join(roomCode);
+
+      room.players.push(socket);
+      const numPlayers = room.players.length;
+
+      if (numPlayers >= 4) room.closed = true;
+
+      socket.emit('JOINED_ROOM');
+      ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers);
 
       const data = { roomCode, roomHost: socket.id };
       socket.emit('SEND_ROOM', JSON.stringify(data));
@@ -60,7 +69,7 @@ export default (ioServer) => {
         if (numPlayers >= 4) room.closed = true;
 
         socket.emit('JOINED_ROOM');
-        ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, playerNames);
+        ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers);
       } else {
         socket.emit('JOIN_ROOM_ERROR', 'room does not exist');
       }
