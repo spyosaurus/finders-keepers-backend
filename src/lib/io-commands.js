@@ -13,7 +13,7 @@ export default (ioServer) => {
 
     // creating rooms
 
-    socket.on('CREATE_ROOM', () => {
+    socket.on('CREATE_ROOM', (username) => {
       let roomCode = randomString.generate({
         charset: 'alphabetic',
         length: 4,
@@ -26,19 +26,22 @@ export default (ioServer) => {
         }).toUpperCase(); 
       }
 
-      console.log('ROOM CREATED', roomCode);
+      console.log('roomcode, username', roomCode, username);
+
       ioServer.rooms[roomCode] = new Room(socket, roomCode);
       const room = ioServer.rooms[roomCode];
-
       socket.join(roomCode);
 
-      room.players.push(socket);
-      const numPlayers = room.players.length;
+      room.playerNames.push(username);
+      const listPlayers = room.playerNames;
+
+      room.playerSockets.push(socket);
+      const numPlayers = room.playerSockets.length;
 
       if (numPlayers >= 4) room.closed = true;
 
       socket.emit('JOINED_ROOM');
-      ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers);
+      ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, listPlayers);
 
       const data = { roomCode, roomHost: socket.id };
       socket.emit('SEND_ROOM', JSON.stringify(data));
@@ -46,35 +49,48 @@ export default (ioServer) => {
 
     // joining rooms
 
-    socket.on('JOIN_ROOM', (roomCode, nickname) => {
+    socket.on('JOIN_ROOM', (roomCode, username) => {
       const room = ioServer.rooms[roomCode];
       if (room) {
         if (room.closed) {
           socket.emit('JOIN_ROOM_ERROR', 'room closed');
           return;
         }  
-        console.log(`${nickname} joined ${roomCode}`);
-
+        console.log(`${username} joined ${roomCode}`);
         socket.join(roomCode);
 
-        room.players.push(socket);
-        const numPlayers = room.players.length;
+        room.playerNames.push(username);
+        const listPlayers = room.playerNames;
+
+        room.playerSockets.push(socket);
+        const numPlayers = room.playerSockets.length;
 
         if (numPlayers >= 4) room.closed = true;
 
         socket.emit('JOINED_ROOM');
-        ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers);
+        ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, listPlayers);
       } else {
         socket.emit('JOIN_ROOM_ERROR', 'room does not exist');
       }
     });
-    // redirect to game
+    // redirects
 
     socket.on('HOST_REDIRECT', (roomCode) => {
       ioServer.to(roomCode).emit('REDIRECT');
     });
 
     // TODO: game socket helpers
+
+    socket.on('TIME_OVER', (roomCode, score, username) => {
+      const room = ioServer.rooms[roomCode];
+      room.playerScores[username] = score;
+    })
+
+    socket.on('UPDATE_SCORES', (roomCode) => {
+      const room = ioServer.rooms[roomCode];
+      ioServer.to(roomCode).emit('SCORES_UPDATED', room.playerScores);
+    })
+
   });
   ioServer.on('disconnect', (socket) => {
     console.log('__DISCONNECTION__', socket.id);
