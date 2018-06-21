@@ -41,7 +41,7 @@ var app = (0, _express2.default)();
 var server = null;
 
 app.use((0, _cors2.default)({
-  origin: 'http://localhost:8080',
+  origin: process.env.CORS_ORIGINS,
   credentials: true
 }));
 app.use(_accountRouter2.default);
