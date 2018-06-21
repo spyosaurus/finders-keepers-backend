@@ -1,11 +1,24 @@
-import randomString from 'randomstring';
-import Room from './room';
+'use strict';
 
-export default (ioServer) => {
-  ioServer.on('connection', (socket) => {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _randomstring = require('randomstring');
+
+var _randomstring2 = _interopRequireDefault(_randomstring);
+
+var _room = require('./room');
+
+var _room2 = _interopRequireDefault(_room);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (ioServer) {
+  ioServer.on('connection', function (socket) {
     console.log('__CONNECTION__', socket.id);
 
-    socket.on('SEND_MESSAGE', (data) => {
+    socket.on('SEND_MESSAGE', function (data) {
       console.log('__SOCKET_EVENT__', 'SEND_MESSAGE');
 
       ioServer.sockets.emit('RECEIVE_MESSAGE', data);
@@ -13,52 +26,52 @@ export default (ioServer) => {
 
     // creating rooms
 
-    socket.on('CREATE_ROOM', () => {
-      let roomCode = randomString.generate({
+    socket.on('CREATE_ROOM', function () {
+      var roomCode = _randomstring2.default.generate({
         charset: 'alphabetic',
-        length: 4,
+        length: 4
       }).toUpperCase();
 
       while (ioServer.rooms[roomCode]) {
-        roomCode = randomString.generate({
+        roomCode = _randomstring2.default.generate({
           charset: 'alphabetic',
-          length: 4,
-        }).toUpperCase(); 
+          length: 4
+        }).toUpperCase();
       }
 
       console.log('ROOM CREATED', roomCode);
-      ioServer.rooms[roomCode] = new Room(socket, roomCode);
-      const room = ioServer.rooms[roomCode];
+      ioServer.rooms[roomCode] = new _room2.default(socket, roomCode);
+      var room = ioServer.rooms[roomCode];
 
       socket.join(roomCode);
 
       room.players.push(socket);
-      const numPlayers = room.players.length;
+      var numPlayers = room.players.length;
 
       if (numPlayers >= 4) room.closed = true;
 
       socket.emit('JOINED_ROOM');
       ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers);
 
-      const data = { roomCode, roomHost: socket.id };
+      var data = { roomCode: roomCode, roomHost: socket.id };
       socket.emit('SEND_ROOM', JSON.stringify(data));
     });
 
     // joining rooms
 
-    socket.on('JOIN_ROOM', (roomCode, nickname) => {
-      const room = ioServer.rooms[roomCode];
+    socket.on('JOIN_ROOM', function (roomCode, nickname) {
+      var room = ioServer.rooms[roomCode];
       if (room) {
         if (room.closed) {
           socket.emit('JOIN_ROOM_ERROR', 'room closed');
           return;
-        }  
-        console.log(`${nickname} joined ${roomCode}`);
+        }
+        console.log(nickname + ' joined ' + roomCode);
 
         socket.join(roomCode);
 
         room.players.push(socket);
-        const numPlayers = room.players.length;
+        var numPlayers = room.players.length;
 
         if (numPlayers >= 4) room.closed = true;
 
@@ -70,13 +83,13 @@ export default (ioServer) => {
     });
     // redirect to game
 
-    socket.on('HOST_REDIRECT', (roomCode) => {
+    socket.on('HOST_REDIRECT', function (roomCode) {
       ioServer.to(roomCode).emit('REDIRECT');
     });
 
     // TODO: game socket helpers
   });
-  ioServer.on('disconnect', (socket) => {
+  ioServer.on('disconnect', function (socket) {
     console.log('__DISCONNECTION__', socket.id);
   });
 };
