@@ -82,6 +82,7 @@ export default (ioServer) => {
     // TODO: game socket helpers
 
     socket.on('TIME_OVER', (roomCode, score, username) => {
+      console.log('time over vars', roomCode, score, username)
       const room = ioServer.rooms[roomCode];
       room.playerScores[username] = score;
     })
