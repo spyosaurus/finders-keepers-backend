@@ -71,7 +71,7 @@ export default (ioServer) => {
     // redirect to game
 
     socket.on('HOST_REDIRECT', (roomCode) => {
-      socket.broadcast.to(roomCode).emit('REDIRECT');
+      ioServer.to(roomCode).emit('REDIRECT');
     });
 
     // TODO: game socket helpers
