@@ -73,6 +73,13 @@ export default (ioServer) => {
         socket.emit('JOIN_ROOM_ERROR', 'room does not exist');
       }
     });
+    // redirect to game
+
+    socket.on('HOST_REDIRECT', (roomCode) => {
+      socket.broadcast.to(roomCode).emit('REDIRECT');
+    });
+
+    // TODO: game socket helpers
   });
   ioServer.on('disconnect', (socket) => {
     console.log('__DISCONNECTION__', socket.id);
