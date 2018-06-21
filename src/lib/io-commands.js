@@ -18,7 +18,6 @@ export default (ioServer) => {
 
     // creating rooms
 
-
     socket.on('CREATE_ROOM', () => {
       let roomCode = randomString.generate({
         charset: 'alphabetic',
@@ -74,5 +73,8 @@ export default (ioServer) => {
         socket.emit('JOIN_ROOM_ERROR', 'room does not exist');
       }
     });
+  });
+  ioServer.on('disconnect', (socket) => {
+    console.log('__DISCONNECTION__', socket.id);
   });
 };
