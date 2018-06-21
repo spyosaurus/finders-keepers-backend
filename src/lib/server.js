@@ -32,6 +32,9 @@ const startServer = () => {
       server = app.listen(process.env.PORT, () => {
         logger.log(logger.INFO, `Server is listening on port ${process.env.PORT}`);
         const ioServer = require('socket.io')(server);
+
+        ioServer.rooms = {};
+
         ioCommands(ioServer);
       });
     });
