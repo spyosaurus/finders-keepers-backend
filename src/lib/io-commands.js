@@ -1,4 +1,3 @@
-import uuid from 'uuid';
 import randomString from 'randomstring';
 import Room from './room';
 
@@ -8,12 +7,8 @@ export default (ioServer) => {
 
     socket.on('SEND_MESSAGE', (data) => {
       console.log('__SOCKET_EVENT__', 'SEND_MESSAGE');
-      socket.emit('RECEIVE_MESSAGE', 'You have sent a message.');
-      ioServer.emit('RECEIVE_MESSAGE', {
-        ...data,
-        id: uuid(),
-        timestamp: new Date(),
-      });
+
+      ioServer.sockets.emit('RECEIVE_MESSAGE', data);
     });
 
     // creating rooms
