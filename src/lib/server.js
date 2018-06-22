@@ -14,7 +14,7 @@ const app = express();
 let server = null;
 
 app.use(cors({
-  origin: 'http://localhost:8080',
+  origin: process.env.CORS_ORIGINS,
   credentials: true,
 }));
 app.use(accountRouter);
