@@ -26,7 +26,7 @@ exports.default = function (ioServer) {
 
     // creating rooms
 
-    socket.on('CREATE_ROOM', function () {
+    socket.on('CREATE_ROOM', function (username) {
       var roomCode = _randomstring2.default.generate({
         charset: 'alphabetic',
         length: 4
@@ -39,19 +39,22 @@ exports.default = function (ioServer) {
         }).toUpperCase();
       }
 
-      console.log('ROOM CREATED', roomCode);
+      console.log('roomcode, username', roomCode, username);
+
       ioServer.rooms[roomCode] = new _room2.default(socket, roomCode);
       var room = ioServer.rooms[roomCode];
-
       socket.join(roomCode);
 
-      room.players.push(socket);
-      var numPlayers = room.players.length;
+      room.playerNames.push(username);
+      var listPlayers = room.playerNames;
 
-      if (numPlayers >= 4) room.closed = true;
+      room.playerSockets.push(socket);
+      var numPlayers = room.playerSockets.length;
+
+      if (numPlayers > 12) room.closed = true;
 
       socket.emit('JOINED_ROOM');
-      ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers);
+      ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, listPlayers);
 
       var data = { roomCode: roomCode, roomHost: socket.id };
       socket.emit('SEND_ROOM', JSON.stringify(data));
@@ -59,35 +62,57 @@ exports.default = function (ioServer) {
 
     // joining rooms
 
-    socket.on('JOIN_ROOM', function (roomCode, nickname) {
+    socket.on('JOIN_ROOM', function (roomCode, username) {
       var room = ioServer.rooms[roomCode];
       if (room) {
         if (room.closed) {
           socket.emit('JOIN_ROOM_ERROR', 'room closed');
           return;
         }
-        console.log(nickname + ' joined ' + roomCode);
-
+        console.log(username + ' joined ' + roomCode);
         socket.join(roomCode);
 
-        room.players.push(socket);
-        var numPlayers = room.players.length;
+        room.playerNames.push(username);
+        var listPlayers = room.playerNames;
+
+        room.playerSockets.push(socket);
+        var numPlayers = room.playerSockets.length;
 
         if (numPlayers >= 4) room.closed = true;
 
         socket.emit('JOINED_ROOM');
-        ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers);
+        ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, listPlayers);
       } else {
         socket.emit('JOIN_ROOM_ERROR', 'room does not exist');
       }
     });
-    // redirect to game
+    // redirects
 
     socket.on('HOST_REDIRECT', function (roomCode) {
       ioServer.to(roomCode).emit('REDIRECT');
     });
 
-    // TODO: game socket helpers
+    // host var socket helpers
+
+    socket.on('SET_HOSTVARS', function (roomCode, numStars, time, backgroundImageNumber) {
+      var room = ioServer.rooms[roomCode];
+      console.log('HOSTVARS', numStars, time, backgroundImageNumber);
+      var data = { numStars: numStars, time: time, backgroundImageNumber: backgroundImageNumber };
+      ioServer.to(roomCode).emit('GET_HOSTVARS', JSON.stringify(data));
+    });
+
+    // game socket helpers
+
+    socket.on('TIME_OVER', function (roomCode, score, username) {
+      console.log('time over vars', roomCode, score, username);
+      var room = ioServer.rooms[roomCode];
+      room.playerScores[username] = score;
+    });
+
+    socket.on('UPDATE_SCORES', function (roomCode) {
+      var room = ioServer.rooms[roomCode];
+      ioServer.to(roomCode).emit('SCORES_UPDATED', room.playerScores);
+    });
   });
   ioServer.on('disconnect', function (socket) {
     console.log('__DISCONNECTION__', socket.id);
