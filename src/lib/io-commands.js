@@ -38,7 +38,7 @@ export default (ioServer) => {
       room.playerSockets.push(socket);
       const numPlayers = room.playerSockets.length;
 
-      if (numPlayers >= 4) room.closed = true;
+      if (numPlayers > 12) room.closed = true;
 
       socket.emit('JOINED_ROOM');
       ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, listPlayers);
