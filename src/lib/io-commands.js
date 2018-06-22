@@ -79,10 +79,19 @@ export default (ioServer) => {
       ioServer.to(roomCode).emit('REDIRECT');
     });
 
-    // TODO: game socket helpers
+    // host var socket helpers
+
+    socket.on('SET_HOSTVARS', (roomCode, numStars, time, backgroundImageNumber) => {
+      const room = ioServer.rooms[roomCode];
+      console.log('HOSTVARS', numStars, time, backgroundImageNumber);
+      const data = { numStars, time, backgroundImageNumber};
+      ioServer.to(roomCode).emit('GET_HOSTVARS', JSON.stringify(data));
+    }); 
+
+    // game socket helpers
 
     socket.on('TIME_OVER', (roomCode, score, username) => {
-      console.log('time over vars', roomCode, score, username)
+      console.log('time over vars', roomCode, )
       const room = ioServer.rooms[roomCode];
       room.playerScores[username] = score;
     })
