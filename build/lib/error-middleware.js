@@ -35,6 +35,6 @@ exports.default = function (error, request, response, next) {
     return response.sendStatus(409);
   }
   _logger2.default.log(_logger2.default.ERROR, 'Responding with 500');
-  _logger2.default.log(_logger2.default.ERROR, error);
+  _logger2.default.log(_logger2.default.ERROR, error.message);
   return response.sendStatus(500);
 };
