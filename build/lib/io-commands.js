@@ -51,7 +51,7 @@ exports.default = function (ioServer) {
       room.playerSockets.push(socket);
       var numPlayers = room.playerSockets.length;
 
-      if (numPlayers > 12) room.closed = true;
+      if (numPlayers >= 12) room.closed = true;
 
       socket.emit('JOINED_ROOM');
       ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, listPlayers);
@@ -78,7 +78,7 @@ exports.default = function (ioServer) {
         room.playerSockets.push(socket);
         var numPlayers = room.playerSockets.length;
 
-        if (numPlayers >= 4) room.closed = true;
+        if (numPlayers >= 12) room.closed = true;
 
         socket.emit('JOINED_ROOM');
         ioServer.to(roomCode).emit('TRACK_PLAYERS', numPlayers, listPlayers);
