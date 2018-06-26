@@ -16,11 +16,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = function (ioServer) {
   ioServer.on('connection', function (socket) {
-    console.log('__CONNECTION__', socket.id);
-
     socket.on('SEND_MESSAGE', function (data) {
-      console.log('__SOCKET_EVENT__', 'SEND_MESSAGE');
-
       ioServer.sockets.emit('RECEIVE_MESSAGE', data);
     });
 
@@ -38,8 +34,6 @@ exports.default = function (ioServer) {
           length: 4
         }).toUpperCase();
       }
-
-      console.log('roomcode, username', roomCode, username);
 
       ioServer.rooms[roomCode] = new _room2.default(socket, roomCode);
       var room = ioServer.rooms[roomCode];
@@ -69,7 +63,6 @@ exports.default = function (ioServer) {
           socket.emit('JOIN_ROOM_ERROR', 'room closed');
           return;
         }
-        console.log(username + ' joined ' + roomCode);
         socket.join(roomCode);
 
         room.playerNames.push(username);
@@ -95,8 +88,7 @@ exports.default = function (ioServer) {
     // host var socket helpers
 
     socket.on('SET_HOSTVARS', function (roomCode, numStars, time, backgroundImageNumber) {
-      var room = ioServer.rooms[roomCode];
-      console.log('HOSTVARS', numStars, time, backgroundImageNumber);
+      var room = ioServer.rooms[roomCode]; // eslint-disable-line
       var data = { numStars: numStars, time: time, backgroundImageNumber: backgroundImageNumber };
       ioServer.to(roomCode).emit('GET_HOSTVARS', JSON.stringify(data));
     });
@@ -104,7 +96,6 @@ exports.default = function (ioServer) {
     // game socket helpers
 
     socket.on('TIME_OVER', function (roomCode, score, username) {
-      console.log('time over vars', roomCode, score, username);
       var room = ioServer.rooms[roomCode];
       room.playerScores[username] = score;
     });
@@ -113,8 +104,5 @@ exports.default = function (ioServer) {
       var room = ioServer.rooms[roomCode];
       ioServer.to(roomCode).emit('SCORES_UPDATED', room.playerScores);
     });
-  });
-  ioServer.on('disconnect', function (socket) {
-    console.log('__DISCONNECTION__', socket.id);
   });
 };
